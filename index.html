@@ -129,6 +129,10 @@
       margin: 7px 0 21px;
     }
 
+    .aura-stat { margin: 7px 0 21px; }
+
+    .quiz-stats { margin-top: 0; }
+
     .stat {
       padding: 13px 16px;
       border: 1px solid rgba(255, 255, 255, .08);
@@ -147,7 +151,7 @@
     }
 
     .stat strong { font-size: 1.16rem; }
-    .aura { color: var(--red); }
+    .aura { color: #ff91a0; }
 
     .progress-row {
       display: flex;
@@ -301,18 +305,94 @@
 
     .primary-button:disabled { opacity: .45; cursor: not-allowed; }
 
+    .mode-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .mode-card {
+      min-height: 140px;
+      padding: 19px;
+      border: 1px solid rgba(255, 48, 72, .3);
+      border-radius: 15px;
+      color: var(--white);
+      background: rgba(255, 255, 255, .035);
+      text-align: left;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .mode-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--red);
+      background: rgba(255, 48, 72, .09);
+    }
+
+    .mode-card strong, .mode-card span { display: block; }
+    .mode-card strong { margin-bottom: 8px; font-size: 1.05rem; }
+    .mode-card span { color: var(--muted); font-size: .88rem; line-height: 1.5; }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .memory-card {
+      display: grid;
+      min-height: 105px;
+      padding: 12px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 13px;
+      color: var(--white);
+      background: rgba(255, 255, 255, .045);
+      text-align: center;
+      line-height: 1.35;
+      cursor: pointer;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .memory-card:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(255, 48, 72, .6);
+    }
+
+    .memory-card.revealed {
+      border-color: var(--red);
+      background: rgba(255, 48, 72, .13);
+    }
+
+    .memory-card.matched {
+      border-color: var(--green);
+      background: rgba(110, 231, 162, .1);
+    }
+
+    .memory-card:focus-visible, .mode-card:focus-visible {
+      outline: 3px solid #ff8593;
+      outline-offset: 3px;
+    }
+
+    .mode-feedback { margin-bottom: 8px; }
+
     .result { padding: 36px 0 10px; text-align: center; }
     .result-icon { font-size: 3.5rem; }
     .result h2 { margin: 12px 0 8px; font-size: 2rem; }
     .result p { color: var(--muted); line-height: 1.6; }
     .result .primary-button { margin-top: 12px; }
+    .result .secondary-button { margin: 12px 0 0 8px; }
     [hidden] { display: none !important; }
 
     @media (max-width: 480px) {
       body { padding: 16px 12px; }
       .quiz { border-radius: 19px; }
       .brand-description { max-width: 230px; line-height: 1.45; }
-      .actions > button { flex: 1; }
+      .actions > button, .mode-options > button { flex: 1; }
+      .mode-options { grid-template-columns: 1fr; }
+      .memory-grid { gap: 7px; }
+      .memory-card { min-height: 88px; padding: 8px; font-size: .86rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -333,13 +413,33 @@
     <section class="intro" aria-labelledby="page-title">
       <p class="eyebrow">Desafio técnico</p>
       <h1 id="page-title">Manutenção de PCs</h1>
-      <p class="subtitle">Teste seus conhecimentos, acumule pontos e tente não perder toda a sua aura. 👀</p>
+      <p class="subtitle">Escolha um modo, teste seus conhecimentos e ganhe aura com cada acerto. 👀</p>
     </section>
 
-    <section id="quizArea" aria-live="polite">
-      <div class="stats" aria-label="Placar">
+    <div class="stat aura-stat" aria-label="Aura atual">
+      <span class="stat-label">Aura</span>
+      <strong class="aura" id="auraValue">1000</strong>
+    </div>
+
+    <section id="modeArea" aria-labelledby="mode-title">
+      <h2 class="question" id="mode-title">Como você quer jogar?</h2>
+      <p class="subtitle">Sua aura começa em 1000. Acertos dão aura; erros tiram.</p>
+      <div class="mode-options">
+        <button class="mode-card" id="memoryModeButton" type="button">
+          <strong>🧠 Jogo da memória</strong>
+          <span>Encontre os pares sobre manutenção de PCs. +100 aura por par e −50 por tentativa errada.</span>
+        </button>
+        <button class="mode-card" id="quizModeButton" type="button">
+          <strong>❓ Quiz Man</strong>
+          <span>Responda às perguntas técnicas. +100 aura por acerto e −100 por erro.</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="quizArea" aria-live="polite" hidden>
+      <div class="stats quiz-stats" aria-label="Placar do quiz">
         <div class="stat"><span class="stat-label">Pontos</span><strong id="score">0</strong></div>
-        <div class="stat"><span class="stat-label">Erros</span><strong class="aura" id="errors">0 · aura intacta</strong></div>
+        <div class="stat"><span class="stat-label">Erros</span><strong id="errors">0</strong></div>
       </div>
       <div class="progress-row">
         <span id="questionCounter">Pergunta 1 de 8</span>
@@ -349,14 +449,29 @@
         <div class="progress-bar" id="progressBar"></div>
       </div>
       <form id="answerForm">
-        <h2 class="question" id="questionText"></h2>
+        <h2 class="question" id="questionText" tabindex="-1"></h2>
         <div class="answers" id="answers"></div>
         <div class="feedback" id="feedback" role="status" aria-live="assertive"></div>
         <div class="actions">
           <button class="primary-button" id="submitButton" type="submit" disabled>Enviar resposta</button>
           <button class="primary-button" id="nextButton" type="button" hidden>Próxima pergunta</button>
+          <button class="secondary-button" id="quizBackButton" type="button">Trocar modo</button>
         </div>
       </form>
+    </section>
+
+    <section id="memoryArea" aria-live="polite" hidden>
+      <div class="stats quiz-stats" aria-label="Placar da memória">
+        <div class="stat"><span class="stat-label">Pares</span><strong id="memoryMatches">0 de 6</strong></div>
+        <div class="stat"><span class="stat-label">Tentativas</span><strong id="memoryMoves">0</strong></div>
+      </div>
+      <h2 class="question" id="memoryTitle">Encontre os pares de manutenção</h2>
+      <p class="subtitle">Combine cada item com o cuidado ou função correspondente.</p>
+      <div class="memory-grid" id="memoryGrid" aria-label="Cartas do jogo da memória"></div>
+      <div class="feedback mode-feedback" id="memoryFeedback" role="status" aria-live="assertive"></div>
+      <div class="actions">
+        <button class="secondary-button" id="memoryBackButton" type="button">Trocar modo</button>
+      </div>
     </section>
 
     <section class="result" id="resultArea" aria-live="polite" hidden>
@@ -364,6 +479,7 @@
       <h2 id="resultTitle">Desafio concluído!</h2>
       <p id="resultMessage"></p>
       <button class="primary-button" id="restartButton" type="button">Jogar de novo</button>
+      <button class="secondary-button" id="resultModesButton" type="button">Escolher modo</button>
     </section>
   </main>
 
@@ -441,6 +557,10 @@
     const progressBar = document.getElementById("progressBar");
     const progressTrack = document.querySelector(".progress-track");
     const quizArea = document.getElementById("quizArea");
+    const modeArea = document.getElementById("modeArea");
+    const memoryArea = document.getElementById("memoryArea");
+    const memoryGrid = document.getElementById("memoryGrid");
+    const memoryFeedback = document.getElementById("memoryFeedback");
     const resultArea = document.getElementById("resultArea");
 
     let currentQuestion = 0;
@@ -448,9 +568,40 @@
     let score = 0;
     let errors = 0;
     let answered = false;
+    let aura = 1000;
+    let activeMode = "";
+    let memoryDeck = [];
+    let revealedCards = [];
+    let memoryMatches = 0;
+    let memoryMoves = 0;
+    let memoryLocked = false;
+    let memoryTimeout = null;
+
+    const memoryPairs = [
+      ["Energia", "Desligar e tirar da tomada"],
+      ["Eletricidade estática", "Usar pulseira antiestática aterrada"],
+      ["Poeira", "Ar comprimido em jatos curtos"],
+      ["Processador", "Aplicar pouca pasta térmica"],
+      ["Tela", "Limpar com pano de microfibra"],
+      ["Superaquecimento", "Verificar cooler e ventilação"]
+    ];
+
+    function changeAura(amount) {
+      aura = Math.max(0, aura + amount);
+      updateScoreboard();
+    }
+
+    function resetRun() {
+      aura = 1000;
+      score = 0;
+      errors = 0;
+      memoryMatches = 0;
+      memoryMoves = 0;
+      updateScoreboard();
+    }
 
     function updateProgress() {
-      const completed = currentQuestion;
+      const completed = currentQuestion + (answered ? 1 : 0);
       const percent = Math.round((completed / questions.length) * 100);
       counterElement.textContent = `Pergunta ${Math.min(currentQuestion + 1, questions.length)} de ${questions.length}`;
       progressPercent.textContent = `${percent}%`;
@@ -460,8 +611,11 @@
     }
 
     function updateScoreboard() {
+      document.getElementById("auraValue").textContent = String(aura);
       scoreElement.textContent = String(score);
-      errorsElement.textContent = errors === 0 ? "0 · aura intacta" : `${errors} · −${errors * 100} aura`;
+      errorsElement.textContent = String(errors);
+      document.getElementById("memoryMatches").textContent = `${memoryMatches} de ${memoryPairs.length}`;
+      document.getElementById("memoryMoves").textContent = String(memoryMoves);
     }
 
     function renderQuestion() {
@@ -513,11 +667,13 @@
 
       if (selectedAnswer === item.correct) {
         score += 1;
+        changeAura(100);
         feedback.className = "feedback success";
         feedback.innerHTML = `<strong>${jokeForCorrect[Math.floor(Math.random() * jokeForCorrect.length)]}</strong><p>${item.explanation}</p>`;
         options[selectedAnswer].classList.add("correct");
       } else {
         errors += 1;
+        changeAura(-100);
         feedback.className = "feedback";
         feedback.innerHTML = `<strong>${item.joke}</strong><p>Resposta certa: ${item.answers[item.correct]}. ${item.explanation}</p>`;
         options[selectedAnswer].classList.add("wrong");
@@ -525,6 +681,7 @@
       }
 
       updateScoreboard();
+      updateProgress();
       submitButton.hidden = true;
       nextButton.hidden = false;
       nextButton.textContent = currentQuestion === questions.length - 1 ? "Ver resultado" : "Próxima pergunta";
@@ -550,22 +707,147 @@
       const resultMessage = document.getElementById("resultMessage");
       resultIcon.textContent = score === questions.length ? "🏆" : score >= 5 ? "🛠️" : "🔧";
       resultTitle.textContent = score === questions.length ? "Lenda da manutenção!" : score >= 5 ? "Mandou bem!" : "Treino concluído!";
-      resultMessage.textContent = `Você acertou ${score} de ${questions.length} perguntas (${percent}%) e cometeu ${errors} ${errors === 1 ? "erro" : "erros"}. ${errors === 0 ? "Aura máxima: nenhum erro!" : `Saldo final de aura: ${Math.max(0, 1000 - errors * 100)}.`}`;
+      resultMessage.textContent = `Você acertou ${score} de ${questions.length} perguntas (${percent}%) e cometeu ${errors} ${errors === 1 ? "erro" : "erros"}. Sua aura final é ${aura}.`;
       document.getElementById("restartButton").focus();
     }
 
-    document.getElementById("restartButton").addEventListener("click", () => {
-      currentQuestion = 0;
-      score = 0;
-      errors = 0;
-      updateScoreboard();
-      quizArea.hidden = false;
+    function showModes() {
+      if (memoryTimeout !== null) {
+        window.clearTimeout(memoryTimeout);
+        memoryTimeout = null;
+      }
+      memoryLocked = false;
+      activeMode = "";
+      quizArea.hidden = true;
+      memoryArea.hidden = true;
       resultArea.hidden = true;
+      modeArea.hidden = false;
+      document.getElementById("mode-title").focus?.();
+    }
+
+    function startQuiz() {
+      resetRun();
+      activeMode = "quiz";
+      currentQuestion = 0;
+      selectedAnswer = null;
+      answered = false;
+      modeArea.hidden = true;
+      memoryArea.hidden = true;
+      resultArea.hidden = true;
+      quizArea.hidden = false;
       renderQuestion();
+    }
+
+    function startMemory() {
+      resetRun();
+      activeMode = "memory";
+      modeArea.hidden = true;
+      quizArea.hidden = true;
+      resultArea.hidden = true;
+      memoryArea.hidden = false;
+      memoryFeedback.textContent = "";
+      memoryFeedback.className = "feedback mode-feedback";
+      revealedCards = [];
+      memoryLocked = false;
+      memoryDeck = memoryPairs.flatMap((pair, pairIndex) => pair.map((label, side) => ({
+        label,
+        pairIndex,
+        side
+      })));
+      for (let index = memoryDeck.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [memoryDeck[index], memoryDeck[randomIndex]] = [memoryDeck[randomIndex], memoryDeck[index]];
+      }
+      renderMemoryCards();
+      memoryGrid.querySelector("button")?.focus();
+    }
+
+    function renderMemoryCards() {
+      memoryGrid.replaceChildren();
+      memoryDeck.forEach((card, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "memory-card";
+        button.textContent = "❔";
+        button.setAttribute("aria-label", `Carta ${index + 1}, fechada`);
+        button.dataset.index = String(index);
+        button.addEventListener("click", () => revealMemoryCard(index));
+        memoryGrid.append(button);
+      });
+    }
+
+    function revealMemoryCard(index) {
+      if (memoryLocked) return;
+      const button = memoryGrid.children[index];
+      if (button.disabled || revealedCards.includes(index)) return;
+      button.textContent = memoryDeck[index].label;
+      button.classList.add("revealed");
+      button.setAttribute("aria-label", `Carta ${index + 1}: ${memoryDeck[index].label}`);
+      revealedCards.push(index);
+      if (revealedCards.length !== 2) return;
+
+      memoryMoves += 1;
+      const [firstIndex, secondIndex] = revealedCards;
+      const firstCard = memoryDeck[firstIndex];
+      const secondCard = memoryDeck[secondIndex];
+      if (firstCard.pairIndex === secondCard.pairIndex && firstCard.side !== secondCard.side) {
+        memoryMatches += 1;
+        changeAura(100);
+        [firstIndex, secondIndex].forEach((cardIndex) => {
+          const matchedButton = memoryGrid.children[cardIndex];
+          matchedButton.disabled = true;
+          matchedButton.classList.remove("revealed");
+          matchedButton.classList.add("matched");
+          matchedButton.setAttribute("aria-label", `Par encontrado: ${memoryDeck[cardIndex].label}`);
+        });
+        memoryFeedback.className = "feedback success mode-feedback";
+        memoryFeedback.textContent = "Par encontrado! +100 aura ✨";
+        revealedCards = [];
+        updateScoreboard();
+        if (memoryMatches === memoryPairs.length) showMemoryResult();
+        return;
+      }
+
+      changeAura(-50);
+      memoryLocked = true;
+      memoryFeedback.className = "feedback mode-feedback";
+      memoryFeedback.textContent = "Não formou um par. −50 aura. Tente outra vez!";
+      memoryTimeout = window.setTimeout(() => {
+        [firstIndex, secondIndex].forEach((cardIndex) => {
+          const revealedButton = memoryGrid.children[cardIndex];
+          revealedButton.textContent = "❔";
+          revealedButton.classList.remove("revealed");
+          revealedButton.setAttribute("aria-label", `Carta ${cardIndex + 1}, fechada`);
+        });
+        revealedCards = [];
+        memoryLocked = false;
+        memoryTimeout = null;
+      }, 850);
+    }
+
+    function showMemoryResult() {
+      memoryArea.hidden = true;
+      resultArea.hidden = false;
+      document.getElementById("resultIcon").textContent = "🧠";
+      document.getElementById("resultTitle").textContent = "Memória de técnico(a)!";
+      document.getElementById("resultMessage").textContent = `Você encontrou os ${memoryPairs.length} pares em ${memoryMoves} tentativas. Aura final: ${aura}.`;
+      document.getElementById("restartButton").focus();
+    }
+
+    document.getElementById("memoryModeButton").addEventListener("click", startMemory);
+    document.getElementById("quizModeButton").addEventListener("click", startQuiz);
+    document.getElementById("quizBackButton").addEventListener("click", showModes);
+    document.getElementById("memoryBackButton").addEventListener("click", showModes);
+    document.getElementById("resultModesButton").addEventListener("click", showModes);
+    document.getElementById("restartButton").addEventListener("click", () => {
+      if (activeMode === "memory") {
+        startMemory();
+      } else {
+        startQuiz();
+      }
     });
 
     updateScoreboard();
-    renderQuestion();
   </script>
 </body>
 </html>
